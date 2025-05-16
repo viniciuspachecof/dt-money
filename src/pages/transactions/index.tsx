@@ -1,31 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { Header } from '../../components/header';
 import { Summary } from '../../components/summary';
 import { SearchForm } from './searchform';
 import { PriceHighlight, TransactionsContainer, TransactionsTable } from './style';
-
-interface Transaction {
-  id: number;
-  description: string;
-  type: 'income' | 'outcome';
-  price: number;
-  category: string;
-  createdAt: string;
-}
+import { TransactionsContext } from '../../contexts/TransactionsContext';
+import { dateFormatter, priceFormatter } from '../../utils/formatter';
 
 export function Transactions() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  async function loadTransactions() {
-    const response = await fetch('http://localhost:3000/transactions');
-    const data = await response.json();
-
-    setTransactions(data);
-  }
-
-  useEffect(() => {
-    loadTransactions();
-  }, []);
+  const { transactions } = useContext(TransactionsContext);
 
   return (
     <div>
@@ -41,10 +23,13 @@ export function Transactions() {
                 <tr key={transaction.id}>
                   <td width="50%">{transaction.description}</td>
                   <td>
-                    <PriceHighlight variant={transaction.type}>{transaction.price}</PriceHighlight>
+                    <PriceHighlight variant={transaction.type}>
+                      {transaction.type === 'outcome' && '- '}
+                      {priceFormatter.format(transaction.price)}
+                    </PriceHighlight>
                   </td>
                   <td>{transaction.category}</td>
-                  <td>{transaction.createdAt}</td>
+                  <td>{dateFormatter.format(new Date(transaction.createdAt))}</td>
                 </tr>
               );
             })}
